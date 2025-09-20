@@ -138,6 +138,22 @@
             opacity: 0;
             transition: opacity 1s ease-in-out, transform 5s ease-in-out;
         }
+
+        /* Styles for integer input section */
+        .int-input-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .int-input-section input[type="number"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 100px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 12px;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -170,9 +186,18 @@
                 <img id="videoFrame" src="" alt="Generated Video Frame" />
             </div>
         </div>
+
+        <!-- Integer input section -->
+        <div class="int-input-section">
+            <h3>Number of Lines</h3>
+            <input type="number" id="intInput" min="0" max="100" placeholder="Enter integer" />
+            <button id="processBtn">Download</button>
+            <!-- Result will NOT be displayed on page, result triggers download -->
+        </div>
     </div>
 
     <script>
+        // Slideshow related code
         const imagesInput = document.getElementById('imagesInput');
         const playBtn = document.getElementById('playBtn');
         const pauseBtn = document.getElementById('pauseBtn');
@@ -198,7 +223,6 @@
                 playBtn.disabled = false;
                 pauseBtn.disabled = false;
 
-                // ✅ Hide the video frame until playback starts
                 document.getElementById('slideshowWrapper').style.display = 'none';
 
                 if (intervalId) clearInterval(intervalId);
@@ -216,13 +240,12 @@
             } else {
                 playBtn.disabled = true;
                 pauseBtn.disabled = true;
-                document.getElementById('slideshowWrapper').style.display = 'none'; // ✅ hide it
+                document.getElementById('slideshowWrapper').style.display = 'none';
                 if (files.length > 5) {
                     alert('You can upload max 5 images only.');
                 }
             }
         });
-
 
         function showImage(index) {
             videoFrame.style.opacity = 0;
@@ -236,7 +259,6 @@
         playBtn.addEventListener('click', () => {
             if (imageUrls.length === 0) return;
 
-            // ✅ Show slideshow container on play
             document.getElementById('slideshowWrapper').style.display = 'block';
 
             if (intervalId) clearInterval(intervalId);
@@ -250,13 +272,56 @@
             }, 4000);
         });
 
-
         pauseBtn.addEventListener('click', () => {
             if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = null;
             }
             setButtonState('pause');
+        });
+
+        // Integer input processing and download
+        document.getElementById('processBtn').addEventListener('click', () => {
+            const input = document.getElementById('intInput').value.trim();
+
+            const intValue = parseInt(input, 10);
+            if (isNaN(intValue) || intValue < 0 || intValue > 100) {
+                alert('Please enter a valid integer between 0 and 100.');
+                return;
+            }
+
+            fetch('/process-integer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: intValue })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Server error');
+                    return response.json();
+                })
+                .then(data => {
+                    const text = data.result;
+
+                    // Create a blob and trigger download
+                    const blob = new Blob([text], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `result_${intValue}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+
+                    // Clean up
+                    setTimeout(() => {
+                        URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    }, 100);
+                })
+                .catch(err => {
+                    alert('Something went wrong. Please try again.');
+                    console.error(err);
+                });
         });
     </script>
 

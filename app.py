@@ -3,7 +3,7 @@ import pytz
 from datetime import datetime
 from dotenv import load_dotenv
 from requests_oauthlib import OAuth2Session
-from flask import Flask, redirect, url_for, session, request, render_template
+from flask import Flask, redirect, url_for, session, request, render_template, jsonify
 
 # Allow insecure HTTP for OAuth (dev only)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -68,6 +68,45 @@ def callback():
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+def process_integer(n):
+    base_string = "FORMULAQSOLUTIONS"
+    try:
+        if n <= 0:
+            return "Please enter a positive number."
+        if n % 2 == 0:
+            n += 1
+        repetitions = n*n
+        full_string = base_string * repetitions
+        middle = n // 2
+        current_pos = 0
+        max_width = (middle * 2) + 1
+        lines = []
+        for i in range(n):
+            if i <= middle:
+                chars_in_row = (i * 2) + 1
+            else:
+                distance_from_middle = i - middle
+                chars_in_row = ((middle - distance_from_middle) * 2) + 1
+            substring = full_string[current_pos:current_pos + chars_in_row]
+            current_pos += chars_in_row
+            spaces_needed = (max_width - chars_in_row) // 2
+            lines.append(" " * spaces_needed + substring)
+        return "\n".join(lines)
+    except ValueError:
+        return "Please enter a valid integer."
+
+
+@app.route('/process-integer', methods=['POST'])
+def handle_integer():
+    data = request.get_json()
+    value = data.get('value')
+
+    if not isinstance(value, int) or value > 100:
+        return jsonify({'error': 'Invalid input'}), 400
+
+    result = process_integer(value)
+    return jsonify({'result': result})
 
 if __name__ == '__main__':
     app.run(debug=True)
