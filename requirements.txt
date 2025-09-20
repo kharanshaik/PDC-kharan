@@ -1,0 +1,4 @@
+pytz
+Flask
+python-dotenv
+requests-oauthlib

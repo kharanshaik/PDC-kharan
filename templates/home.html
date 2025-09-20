@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
+
+        .google-btn {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .google-btn:hover {
+            transform: scale(1.05);
+            cursor: pointer;
+        }
+
+        .login-text {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="{{ url_for('login') }}">
+        <img src="{{ url_for('static', filename='btn_google_signin.png') }}" alt="Sign in with Google"
+            class="google-btn">
+    </a>
+    <p class="login-text">Click above to sign in with Google</p>
+</body>
+
+</html>
